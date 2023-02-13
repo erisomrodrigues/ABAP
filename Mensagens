@@ -1,0 +1,15 @@
+*&---------------------------------------------------------------------*
+*& Report Z_TIPOS_MENSAGENS
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+REPORT Z_TIPOS_MENSAGENS.
+
+*message 'Olá Mundo' type 'I'.
+*message 'Olá Mundo' type 'S'.
+*message 'Olá Mundo' type 'A'.
+*message 'Olá Mundo' type 'E'.
+*message 'Olá Mundo' type 'X'.
+*message 'Olá Mundo' type 'I' DISPLAY LIKE 'E'.
+*MESSAGE I001(Z_MSJ).
+*MESSAGE I001(Z_MSJ) WITH 'Ola' 'mundo' 'Pessoal'.
