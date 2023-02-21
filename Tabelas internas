@@ -1,0 +1,26 @@
+*&---------------------------------------------------------------------*
+*& Report ZFOR_ALL_ENTRIES
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+REPORT ZFOR_ALL_ENTRIES.
+
+
+data: IT_SPFLI TYPE STANDARD TABLE OF SPFLI, " Criando tabela interna
+      IT_SFLIGTH TYPE STANDARD TABLE OF SFLIGHT.
+
+DATA: WA_SFLIGTH TYPE SFLIGHT. "Criando work area
+
+REFRESH: IT_SFLIGTH, IT_SPFLI. "Limpando as tabelas
+
+SELECT * FROM SPFLI INTO TABLE IT_SPFLI WHERE CARRID = 'AA'.
+
+SELECT * FROM SFLIGHT
+   INTO TABLE IT_SFLIGTH
+   FOR ALL ENTRIES IN IT_SPFLI
+   WHERE CARRID = IT_SPFLI-CARRID
+   AND CONNID = IT_SPFLI-CONNID.
+
+
+IF SY-SUBRC = 0.
+ENDIF.
