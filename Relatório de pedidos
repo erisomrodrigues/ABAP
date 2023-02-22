@@ -1,0 +1,588 @@
+Código fonte do programa criado
+*&---------------------------------------------------------------------*
+
+*& Report ZAULA_SCREENS
+
+*&
+
+*&---------------------------------------------------------------------*
+
+*&
+
+*&
+
+*&---------------------------------------------------------------------*
+
+REPORT zaula_screens.
+
+TABLES: ekko,
+
+sscrfields,
+
+mara.
+
+
+
+TYPE-POOLS: icon.
+
+
+
+DATA: lt_ekko TYPE TABLE OF ekko.
+
+DATA: lt_ekko2 TYPE TABLE OF ekko.
+
+
+
+"---------------------------------------------------------------------
+
+" Parameters
+
+"---------------------------------------------------------------------
+
+SELECTION-SCREEN BEGIN OF BLOCK bl1 WITH FRAME TITLE text-001.
+
+"Parâmetro simples.
+
+PARAMETERS: p_matnr TYPE mara-matnr MODIF ID p1.
+
+"Parâmetro de Checkbox.
+
+PARAMETERS: c_todos TYPE char1 AS CHECKBOX MODIF ID p1 DEFAULT 'X',
+
+c_matnr TYPE char1 AS CHECKBOX MODIF ID p1,
+
+c_item TYPE char1 AS CHECKBOX MODIF ID p1.
+
+"Parâmetro de Listbox.
+
+PARAMETERS: l_mtart TYPE mara-mtart AS LISTBOX VISIBLE LENGTH 10 MODIF ID p1.
+
+"Parâmetro simples com match code.
+
+PARAMETERS: p_mtart TYPE mara-mtart MODIF ID p1.
+
+SELECTION-SCREEN END OF BLOCK bl1.
+
+
+
+"---------------------------------------------------------------------
+
+" Selection-options
+
+"---------------------------------------------------------------------
+
+SELECTION-SCREEN BEGIN OF BLOCK bl2 WITH FRAME TITLE text-002.
+
+SELECT-OPTIONS: so_ebeln FOR ekko-ebeln MODIF ID p2.
+
+PARAMETERS: p_ebeln TYPE ekko-ebeln MODIF ID p2.
+
+SELECTION-SCREEN END OF BLOCK bl2.
+
+
+
+"---------------------------------------------------------------------
+
+" Radio-button
+
+"---------------------------------------------------------------------
+
+SELECTION-SCREEN BEGIN OF BLOCK bl3 WITH FRAME TITLE text-003.
+
+SELECTION-SCREEN BEGIN OF LINE.
+
+PARAMETERS: p_all RADIOBUTTON GROUP gr1 USER-COMMAND usr_command.
+
+SELECTION-SCREEN COMMENT 5(5) text-004 FOR FIELD p_all.
+
+PARAMETERS: p_opened RADIOBUTTON GROUP gr1.
+
+SELECTION-SCREEN COMMENT 14(10) text-005 FOR FIELD p_opened.
+
+PARAMETERS: p_closed RADIOBUTTON GROUP gr1 DEFAULT 'X'.
+
+SELECTION-SCREEN COMMENT 26(14) text-006 FOR FIELD p_closed .
+
+SELECTION-SCREEN END OF LINE.
+
+SELECTION-SCREEN END OF BLOCK bl3.
+
+
+
+"---------------------------------------------------------------------
+
+" Buttons -> Function Key
+
+"---------------------------------------------------------------------
+
+SELECTION-SCREEN: FUNCTION KEY 1. "Declaração dos botões.
+
+SELECTION-SCREEN: FUNCTION KEY 2.
+
+SELECTION-SCREEN: FUNCTION KEY 3.
+
+SELECTION-SCREEN: FUNCTION KEY 4.
+
+SELECTION-SCREEN: FUNCTION KEY 5.
+
+
+
+"---------------------------------------------------------------------
+
+" Novas telas
+
+"---------------------------------------------------------------------
+
+SELECTION-SCREEN BEGIN OF SCREEN 9000.
+
+SELECTION-SCREEN COMMENT /1(40) text1.
+
+PARAMETERS: p_novo TYPE char10.
+
+SELECTION-SCREEN END OF SCREEN 9000.
+
+SELECTION-SCREEN BEGIN OF SCREEN 9001.
+
+SELECTION-SCREEN COMMENT /1(40) text2.
+
+PARAMETERS: p_popup TYPE char10.
+
+SELECTION-SCREEN END OF SCREEN 9001.
+
+
+
+"---------------------------------------------------------------------
+
+" Abas
+
+"---------------------------------------------------------------------
+
+SELECTION-SCREEN BEGIN OF TABBED BLOCK t1 FOR 20 LINES.
+
+SELECTION-SCREEN TAB (20) tab1 USER-COMMAND usrcmd1 DEFAULT SCREEN 101.
+
+SELECTION-SCREEN TAB (20) tab2 USER-COMMAND usrcmd2 DEFAULT SCREEN 102.
+
+SELECTION-SCREEN TAB (20) tab3 USER-COMMAND usrcmd3 DEFAULT SCREEN 103.
+
+SELECTION-SCREEN END OF BLOCK t1.
+
+SELECTION-SCREEN BEGIN OF SCREEN 101 AS SUBSCREEN.
+
+PARAMETERS: p_matnrs TYPE mara-matnr.
+
+SELECTION-SCREEN END OF SCREEN 101.
+
+
+
+SELECTION-SCREEN BEGIN OF SCREEN 102 AS SUBSCREEN.
+
+SELECT-OPTIONS so_matnr FOR mara-matnr.
+
+SELECTION-SCREEN END OF SCREEN 102.
+
+
+
+SELECTION-SCREEN BEGIN OF SCREEN 103 AS SUBSCREEN.
+
+PARAMETERS: p_insert RADIOBUTTON GROUP gr2 DEFAULT 'X',
+
+p_delete RADIOBUTTON GROUP gr2.
+
+SELECTION-SCREEN END OF SCREEN 103.
+
+
+
+"---------------------------------------------------------------------
+
+" Pushbutton
+
+"---------------------------------------------------------------------
+
+SELECTION-SCREEN BEGIN OF BLOCK bl4 WITH FRAME TITLE text-007.
+
+SELECTION-SCREEN PUSHBUTTON /1(15) botao1 USER-COMMAND user1.
+
+SELECTION-SCREEN SKIP 1.
+
+SELECTION-SCREEN ULINE.
+
+SELECTION-SCREEN SKIP 1.
+
+SELECTION-SCREEN PUSHBUTTON /1(15) botao2 USER-COMMAND user2.
+
+SELECTION-SCREEN END OF BLOCK bl4.
+
+
+
+SELECTION-SCREEN BEGIN OF SCREEN 400 AS WINDOW.
+
+SELECTION-SCREEN INCLUDE BLOCKS bl4.
+
+SELECTION-SCREEN END OF SCREEN 400.
+
+
+
+SELECTION-SCREEN BEGIN OF SCREEN 401 AS WINDOW.
+
+SELECTION-SCREEN INCLUDE BLOCKS bl3.
+
+SELECTION-SCREEN END OF SCREEN 401.
+
+
+
+
+
+"---------------------------------------------------------------------
+
+" Match code
+
+"---------------------------------------------------------------------
+
+PARAMETERS: p_matnr3 TYPE char18 MATCHCODE OBJECT zmatnr. "s_mat1.
+
+
+
+"---------------------------------------------------------------------
+
+" Eventos
+
+"---------------------------------------------------------------------
+
+INITIALIZATION.
+
+PERFORM f_carrega_dados.
+
+PERFORM f_criar_botoes.
+
+
+
+AT SELECTION-SCREEN OUTPUT.
+
+PERFORM f_modifica_tela.
+
+
+
+AT SELECTION-SCREEN ON p_matnr.
+
+PERFORM f_valida_entrada.
+
+
+
+AT SELECTION-SCREEN.
+
+PERFORM f_evento_botao.
+
+
+
+START-OF-SELECTION.
+
+PERFORM f_executar_programa.
+
+
+
+*&---------------------------------------------------------------------*
+
+*& Form f_criar_botoes
+
+*&---------------------------------------------------------------------*
+
+* text
+
+*----------------------------------------------------------------------*
+
+FORM f_criar_botoes.
+
+DATA: ls_button TYPE smp_dyntxt.
+
+"Botão 1
+
+ls_button-text = 'Criar material'.
+
+ls_button-icon_id = icon_create.
+
+ls_button-quickinfo = 'Criar material'.
+
+sscrfields-functxt_01 = ls_button.
+
+"Botão 2
+
+ls_button-text = 'Alterar material'.
+
+ls_button-icon_id = icon_change.
+
+ls_button-quickinfo = 'Alterar material'.
+
+sscrfields-functxt_02 = ls_button.
+
+"Botão 3
+
+ls_button-text = 'Remover material'.
+
+ls_button-icon_id = icon_delete.
+
+ls_button-quickinfo = 'Remover material'.
+
+sscrfields-functxt_03 = ls_button.
+
+"Botão 4
+
+ls_button-text = 'Tela Cheia'.
+
+ls_button-icon_id = icon_businav_szenario.
+
+ls_button-quickinfo = 'Tela Cheia'.
+
+sscrfields-functxt_04 = ls_button.
+
+"Botão 5
+
+ls_button-text = 'Pop-up'.
+
+ls_button-icon_id = icon_system_modus_create.
+
+ls_button-quickinfo = 'Pop-up'.
+
+sscrfields-functxt_05 = ls_button.
+
+ENDFORM. "f_criar_botoes
+
+
+
+*&---------------------------------------------------------------------*
+
+*& Form f_evento_botao
+
+*&---------------------------------------------------------------------*
+
+* text
+
+*----------------------------------------------------------------------*
+
+FORM f_evento_botao.
+
+CASE sy-ucomm.
+
+WHEN 'FC01'. BREAK-POINT.
+
+WHEN 'FC02'. BREAK-POINT.
+
+WHEN 'FC03'. BREAK-POINT.
+
+WHEN 'FC04'. CALL SELECTION-SCREEN 9000.
+
+WHEN 'FC05'. CALL SELECTION-SCREEN 9001 STARTING AT 10 5 ENDING AT 60 8.
+
+WHEN 'USRCMD3'. BREAK-POINT.
+
+WHEN 'USER1'. CALL SELECTION-SCREEN 400 STARTING AT 5 5.
+
+WHEN 'USER2'. CALL SELECTION-SCREEN 401 STARTING AT 5 5.
+
+ENDCASE.
+
+ENDFORM. "f_evento_botao
+
+
+
+*&---------------------------------------------------------------------*
+
+*& Form f_valida_entrada
+
+*&---------------------------------------------------------------------*
+
+* text
+
+*----------------------------------------------------------------------*
+
+
+
+FORM f_valida_entrada.
+
+* DATA: lv_matnr TYPE mara-matnr.
+
+*
+
+* SELECT SINGLE matnr
+
+* INTO lv_matnr
+
+* FROM mara
+
+* WHERE matnr EQ p_matnr.
+
+*
+
+* IF sy-subrc NE 0.
+
+* MESSAGE 'Material não encontrado!' TYPE 'S' DISPLAY LIKE 'W'.
+
+* ENDIF.
+
+ENDFORM. "f_valida_entrada
+
+
+
+*&---------------------------------------------------------------------*
+
+*& Form f_modifica_tela
+
+*&---------------------------------------------------------------------*
+
+* text
+
+*----------------------------------------------------------------------*
+
+FORM f_modifica_tela.
+
+LOOP AT SCREEN.
+
+IF p_all EQ 'X'.
+
+IF screen-group1 EQ 'P1' OR screen-group1 EQ 'P2'.
+
+screen-invisible = 0.
+
+ENDIF.
+
+ENDIF.
+
+
+
+IF p_opened EQ 'X'. "Parameters
+
+IF screen-group1 EQ 'P1'.
+
+screen-invisible = 0.
+
+screen-input = 1.
+
+screen-active = 1.
+
+ENDIF.
+
+
+
+IF screen-group1 EQ 'P2'.
+
+screen-invisible = 1.
+
+screen-input = 0.
+
+screen-active = 0.
+
+ENDIF.
+
+ENDIF.
+
+
+
+IF p_closed EQ 'X'. "Select-options
+
+IF screen-group1 EQ 'P1'.
+
+screen-invisible = 1.
+
+screen-input = 0.
+
+screen-active = 0.
+
+ENDIF.
+
+
+
+IF screen-group1 EQ 'P2'.
+
+screen-invisible = 0.
+
+screen-input = 1.
+
+screen-active = 1.
+
+ENDIF.
+
+ENDIF.
+
+
+
+IF screen-name EQ 'P_EBELN'.
+
+screen-input = 0.
+
+ENDIF.
+
+
+
+MODIFY SCREEN.
+
+ENDLOOP.
+
+ENDFORM. "f_modifica_tela
+
+
+
+*&---------------------------------------------------------------------*
+
+*& Form f_carrega_dados
+
+*&---------------------------------------------------------------------*
+
+* text
+
+*----------------------------------------------------------------------*
+
+FORM f_carrega_dados.
+
+text1 = 'Nova tela - Cheia'.
+
+text2 = 'Nova tela - Pop-up'.
+
+tab1 = 'Material Simples'.
+
+tab2 = 'Range de Materiais'.
+
+tab3 = 'Ação'.
+
+botao1 = 'Inserir'.
+
+botao2 = 'Deletar'.
+
+p_ebeln = '4500000000'.
+
+ENDFORM. "f_carrega_dados
+
+
+
+*&---------------------------------------------------------------------*
+
+*& Form f_executar_programa
+
+*&---------------------------------------------------------------------*
+
+* text
+
+*----------------------------------------------------------------------*
+
+FORM f_executar_programa.
+
+*SELECT *
+
+* INTO TABLE lt_ekko[]
+
+* FROM ekko
+
+* WHERE ebeln IN so_ebeln[].
+
+*
+
+
+
+*SELECT *
+
+* INTO TABLE lt_ekko2[]
+
+* FROM ekko
+
+* WHERE ebeln EQ p_ebeln.
+
+ENDFORM. "f_executar_programa
