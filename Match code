@@ -1,0 +1,15 @@
+*&---------------------------------------------------------------------*
+*& Report Z_MATCHCODE
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+REPORT Z_MATCHCODE.
+
+TABLES: ZTEST_MATCHCODE. "Criar pela se11
+
+PARAMETERS: P_LAN1 TYPE ZTEST_MATCHCODE-IDIOMA,
+            P_LAN2 TYPE CHAR2 MATCHCODE OBJECT ZT002T_comp.
+
+SELECT-OPTIONS: S_MAND FOR ZTEST_MATCHCODE-MANDT,
+                S_BLAR FOR ZTEST_MATCHCODE-BLART.
+                
